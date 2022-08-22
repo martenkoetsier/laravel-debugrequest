@@ -9,11 +9,11 @@ To be very easily recognized, the first log entry is a collection of information
 box drawing characters. The general layout is as follows:
 
 ```
-╔═╡GET /╞══════════════════════════════════════╗
+╔═╡GET /╞═════════════════════════════════════════════╗
 ║ route: (anonymous)                                  ║
 ║ mw: web                                             ║
 ║ sid:1ykjpbMLmEeCHY5Uc7IiTpg7KKVzmOTBslki5VEi u:none ║
-╚═════════════════════════════════════════════╝
+╚═════════════════════════════════════════════════════╝
 ```
 
 This can be completed by session and request information.
