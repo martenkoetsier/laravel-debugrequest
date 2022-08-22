@@ -23,6 +23,16 @@ return [
     'middleware_groups' => ['web', 'api'],
 
     /**
+     * Whether the bound route parameters should be displayed by just the Model class name and
+     * identifying key (if it is an Eloquent Model), or as the full string representation. This is
+     * only relevant if the middleware is called after the SubstituteBindings middleware, which it
+     * is by default.
+     * 
+     * @var boolean
+     */
+    'bound_parameters_as_key' => true,
+
+    /**
      * The messages are logged in "boxes", drawn with box drawing characters. These boxes have a
      * defined minimum and maximum width. This is the width available to the messages, not including
      * the box drawing characters and padding.

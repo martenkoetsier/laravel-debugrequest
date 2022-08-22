@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Http\Middleware;
+
 namespace Martenkoetsier\LaravelDebugrequest;
 
 use Closure;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -38,6 +40,15 @@ class DebugRequest {
 	protected $maximum_parameter_length;
 
 	/**
+     * Whether the bound route parameters should be displayed by just the Model class name and identifying key (if it is
+	 * an Eloquent Model), or as the full string representation. This is only relevant if the middleware is called after
+	 * the SubstituteBindings middleware, which it is by default.
+	 * 
+	 * @var boolean
+	 */
+	protected $bound_parameters_as_key;
+
+	/**
 	 * Setup.
 	 * 
 	 * Derive some settings from the configuration (or use defaults).
@@ -47,6 +58,7 @@ class DebugRequest {
 		$this->minimum_width = config('debugrequest.minimum_width', 48);
 		$this->maximum_width = config('debugrequest.maximum_width', 196);
 		$this->maximum_parameter_length = config('debugrequest.maximum_parameter_length', 256);
+		$this->bound_parameters_as_key = config('debugrequest.bound_parameters_as_key', true);
 	}
 
 	/**
@@ -73,7 +85,13 @@ class DebugRequest {
 					if (!$first) {
 						$desc .= ", ";
 					}
-					$desc .= "$key => " . $request->route($key);
+					$bound = $request->route($key);
+					if ($this->bound_parameters_as_key && is_object($bound) && (is_a($bound, Model::class))) {
+						$class = preg_replace('/^App\\\\Models\\\\/', '', get_class($bound));
+						$desc .= "$key => $class({$bound->getKey()})";
+					} else {
+						$desc .= "$key => " . $bound;
+					}
 					$first = false;
 				}
 				$desc .= "]";
@@ -105,7 +123,7 @@ class DebugRequest {
 					}
 				}
 			});
-			
+
 			$this->logInfo($info, "{$request->method()} " . Str::start($request->path(), '/'));
 		}
 
