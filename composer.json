@@ -1,0 +1,27 @@
+{
+    "name": "martenkoetsier/laravel-debugrequest",
+    "description": "Have a middleware log some details on every request such as route used, session, logged-in user, request parameters, and request duration.",
+    "license": "MIT",
+    "keywords": ["logging", "request", "route", "parameters"],
+    "autoload": {
+        "psr-4": {
+            "Martenkoetsier\\LaravelDebugrequest\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Marten Koetsier",
+            "email": "martenkoetsier@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": "^9.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Martenkoetsier\\LaravelDebugrequest\\Providers\\LaravelDebugrequestProvider"
+            ]
+        }
+    }
+}
