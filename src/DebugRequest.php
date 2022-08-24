@@ -102,6 +102,7 @@ class DebugRequest {
 			// session info
 			if ($request->hasSession()) {
 				$info[] = sprintf("sid:%s u:%s", $request->session()->getId(), $request->user()->id ?? 'none');
+				$info = array_merge($info, $this->getFlashedInfo($request));
 			} else {
 				$info[] = '(no session)';
 			}
@@ -130,17 +131,23 @@ class DebugRequest {
 		$return = $next($request);
 
 		if ($this->debug) {
-			if ($request->hasSession() && $request->session()->has('errors')) {
-				$info = [];
-				$info[] = "error(s) set in session";
-				$info[] = "BR";
-				$errors = $request->session()->get('errors');
-				foreach ($errors->keys() as $key) {
-					foreach ($errors->get($key) as $index => $value) {
-						$info[] = "[$key][$index] " . var_export($value, true);
+			$info = [];
+			if ($request->hasSession()) {
+				if ($request->session()->has('errors')) {
+					$info[] = "error(s) set in session";
+					$info[] = "BR";
+					$errors = $request->session()->get('errors');
+					foreach ($errors->keys() as $key) {
+						foreach ($errors->get($key) as $index => $value) {
+							$info[] = "[$key][$index] " . var_export($value, true);
+						}
 					}
 				}
-				$this->logInfo($info);
+			}
+			$info = array_merge($info, $this->getFlashedInfo($request));
+
+			if (!empty($info)) {
+				$this->logInfo($info, "end of request");
 			}
 
 			if ($start) {
@@ -149,6 +156,33 @@ class DebugRequest {
 		}
 
 		return $return;
+	}
+
+	protected function getFlashedInfo(Request $request): array {
+		$info = [];
+		if (!empty($flash_keys = $request->session()->get('_flash'))) {
+			foreach ($flash_keys as $set => $keys) {
+				if (!empty($keys)) {
+					$info[] = "BR|flash $set";
+					foreach ($keys as $key) {
+						if ($key[0] !== '_') {
+							$value = var_export($request->session()->get($key, 'NOT FOUND'), true);
+							if (mb_strlen($value) > $this->maximum_parameter_length) {
+								$value = mb_substr($value, 0, $this->maximum_parameter_length) . ' (…)';
+							}
+							if ($key === 'totp_password') {
+								$info[] = "[$key] " . sprintf("%06d", $value);
+							} elseif (stripos($key, 'password') !== false) {
+								$info[] = "[$key] " . str_repeat("*", strlen($value));
+							} else {
+								$info[] = "[$key] $value";
+							}
+						}
+					}
+				}
+			}
+		}
+		return $info;
 	}
 
 	/**
